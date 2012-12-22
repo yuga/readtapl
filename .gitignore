@@ -1,0 +1,18 @@
+# backup files
+*#
+*~
+*.swp
+
+# working files
+*.cmi
+*.cmo
+*.annot
+*.exe
+*.hi
+*.o
+
+# cabal build directories
+arith/dist
+untyped/dist
+
+# test or I'm not author of the files

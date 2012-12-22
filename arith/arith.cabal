@@ -1,0 +1,17 @@
+name:          arith
+version:       0.0.0
+cabal-version: >= 1.2
+build-type:    Simple
+author:        Shohei Murayama 
+maintainer:    shohei.murayama@gmail.com
+synopsis:      a Haskell port of OCaml implementation for "Types and Programming Languages" by Benjamin C. Pierce.
+description:   The first implementation of the book. The next is untyped.
+
+executable arith
+  hs-source-dirs:  src
+  main-is:         Main.hs
+  build-depends:   base >= 4
+                 , bytestring >= 0.9
+                 , parsec
+  ghc-options:     -Wall
+

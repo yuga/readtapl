@@ -1,0 +1,20 @@
+name:          untyped
+version:       0.0.0
+cabal-version: >= 1.2
+build-type:    Simple
+author:        Shohei Murayama
+maintainer:    shohei.murayama@gmail.com
+synopsis:      a Haskell port of OCaml implementation for "Types and Programming Languages" by Benjamin C. Pierce.
+description:   This implements the full of requirements in "Figure 5-3: Untyped lambda-calculus".
+               The next is full untyped or simplebool.
+
+executable untyped
+  hs-source-dirs:  src
+  main-is:         Main.hs
+  build-depends:   base >= 4
+                 , bytestring >= 0.9
+                 , mtl >= 2.1
+                 , parsec
+                 , transformers >= 0.3
+  ghc-options:     -Wall
+
