@@ -29,11 +29,15 @@ untyped = separators >> endBy1 command termsep
 command :: Parser Command
 command = commandBind <|> commandTerm 
 
+commandBind :: Parser Command
+commandBind = uncurry Bind <$> binding
+
 commandTerm :: Parser Command
 commandTerm = Eval <$> term
 
-commandBind :: Parser Command
-commandBind = uncurry Bind <$> binding
+-- --------------
+-- Binding
+-- --------------
 
 binding :: Parser (String, Binding)
 binding = try $ do
@@ -41,6 +45,61 @@ binding = try $ do
     ctx <- getState
     setState $ appendNameBind ctx x
     return (x, NameBind)
+
+-- --------------
+-- Terms
+-- --------------
+
+-- term := appTerm | tmAbs
+term :: Parser Term
+term = appTerm <|> tmAbs
+
+-- appTerm := aTerm | tmApp
+appTerm :: Parser Term
+appTerm = chainl1 aTerm tmApp
+
+-- aTerm := surrounded | tmVar
+aTerm :: Parser Term
+aTerm = surrounded <|> tmVar
+
+-- tmAbs := 'lambda' lcid '.' Term | 'lambda' '_' 
+tmAbs :: Parser Term
+tmAbs = lcidAbs <|> uscoreAbs
+  where
+    lcidAbs = do
+        x <- try lambda *> lcid <* dot
+        ctx <- getState
+        setState $ appendNameBind ctx x
+        t <- term
+        setState ctx
+        return $ TmAbs x t
+    uscoreAbs = do
+        lambda >> uscore >> dot
+        ctx <- getState
+        setState $ appendNameBind ctx "_"
+        t <- term
+        setState ctx
+        return $ TmAbs "_" t
+
+-- tmApp := appTerm tmVar
+tmApp :: Parser (Term -> Term -> Term)
+tmApp = return TmApp
+
+-- tmVar := lcid
+tmVar :: Parser Term
+tmVar = do
+    name <- lcid
+    ctx <- getState
+    index <- name2Index' ctx name
+    return $ TmVar index (lengthContext ctx)
+  where
+    name2Index' ctx name = case name2Index ctx name of
+        Left s -> unexpected s
+        Right i -> return i
+
+-- surrounded := '(' term ')'
+surrounded :: Parser Term
+surrounded = between (symbol "(") (symbol ")") term
 
 -- --------------
 -- Tokens
@@ -132,57 +191,3 @@ separators = void $ many separator
 termsep :: Parser ()
 termsep = separators >> char ';' >> separators
 
--- --------------
--- Terms
--- --------------
-
--- term := appTerm | tmAbs
-term :: Parser Term
-term = appTerm <|> tmAbs
-
--- appTerm := aTerm | tmApp
-appTerm :: Parser Term
-appTerm = chainl1 aTerm tmApp
-
--- aTerm := surrounded | tmVar
-aTerm :: Parser Term
-aTerm = surrounded <|> tmVar
-
--- tmAbs := 'lambda' lcid '.' Term | 'lambda' '_' 
-tmAbs :: Parser Term
-tmAbs = lcidAbs <|> uscoreAbs
-  where
-    lcidAbs = do
-        x <- try lambda *> lcid <* dot
-        ctx <- getState
-        setState $ appendNameBind ctx x
-        t <- term
-        setState ctx
-        return $ TmAbs x t
-    uscoreAbs = do
-        lambda >> uscore >> dot
-        ctx <- getState
-        setState $ appendNameBind ctx "_"
-        t <- term
-        setState ctx
-        return $ TmAbs "_" t
-
--- tmApp := appTerm tmVar
-tmApp :: Parser (Term -> Term -> Term)
-tmApp = return TmApp
-
--- tmVar := lcid
-tmVar :: Parser Term
-tmVar = do
-    name <- lcid
-    ctx <- getState
-    index <- name2Index' ctx name
-    return $ TmVar index (lengthContext ctx)
-  where
-    name2Index' ctx name = case name2Index ctx name of
-        Left s -> unexpected s
-        Right i -> return i
-
--- surrounded := '(' term ')'
-surrounded :: Parser Term
-surrounded = between (symbol "(") (symbol ")") term

@@ -186,7 +186,7 @@ termSubstTop s t = termShift (-1) (termSubst 0 (termShift 1 s) t)
 eval :: Term -> Term
 eval t = case eval1 t of
     Left  _  -> t
-    Right t' -> t'
+    Right t' -> eval t'
 
 eval1 :: Term -> Either String Term
 eval1 (TmApp (TmAbs _ t12) v2) | isVal v2 = return $ termSubstTop v2 t12
