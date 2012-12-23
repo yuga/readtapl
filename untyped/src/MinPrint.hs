@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 
 module MinPrint (
@@ -21,7 +22,8 @@ import Data.String                (IsString, fromString)
 newtype MinPrintT s m a
     = MinPrintT { unMinPrintT :: Doc s -> m (a, Doc s) }
 
-type MinPrint s a = MinPrintT s Identity a
+type MinPrint s a = forall m. Monad m => MinPrintT s m a
+--type MinPrint s a = MinPrintT s Identity a
 
 data Doc s
     = Nil
@@ -101,18 +103,18 @@ printDoc f d = printTreeR f 0 d
 printTreeR :: (Monad m, Monoid (m a), IsString s) => (s -> m a) -> Int -> Doc s -> m a
 printTreeR _ _ Nil = mempty
 printTreeR f n (Line s Nil) = do
-    --printWS f n
+    printWS f n
     printTreeL f s
 printTreeR f n (Line s d) = do
     printTreeR f n d
-    --printBR f
-    --printWS f n
+    printBR f
+    printWS f n
     printTreeL f s
 printTreeR f n1 (Nest n2 d1 Nil) = do
     printTreeR f (n1+n2) d1
 printTreeR f n1 (Nest n2 d1 d2) = do
     printTreeR f n1 d2
-    --printBR f
+    printBR f
     printTreeR f (n1+n2) d1
 
 printTreeL :: (Monad m, Monoid (m a)) => (s -> m a) -> Item s -> m a
@@ -124,10 +126,12 @@ printTreeL f (Text s) = do
     f s
 
 printWS :: (Monad m, IsString s) => (s -> m a) -> Int -> m a
-printWS f n = f $ fromString $ take n $ repeat ' '
+printWS f _ = f $ fromString $ ""
+-- printWS f n = f $ fromString $ take n $ repeat ' '
 
 printBR :: (Monad m, IsString s) => (s -> m a) -> m a
-printBR f = f $ fromString "\n"
+printBR f = f $ fromString ""
+--printBR f = f $ fromString "\n"
 
 {-
 -- ---------------------------------------------------------------------------
