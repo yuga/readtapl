@@ -14,7 +14,7 @@ executable untyped
   build-depends:   base >= 4
                  , bytestring >= 0.9
                  , mtl >= 2.1
-                 , parsec
+                 , parsec >= 3.1
                  , transformers >= 0.3
   ghc-options:     -Wall
 

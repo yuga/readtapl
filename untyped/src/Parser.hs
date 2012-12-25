@@ -168,7 +168,7 @@ comment :: Parser ()
 comment = try $ do
     void $ string "/*"
     void $ many (noneOf "*" <|> starNotCommentEnd)
-    void $ commentEnd
+    void commentEnd
     return ()
 
 starNotCommentEnd :: Parser Char
@@ -179,7 +179,7 @@ commentEnd = many1 (char '*') *> char '/'
 
 -- separator := space | comment
 separator :: Parser ()
-separator = (void space) <|> comment
+separator = void space <|> comment
 
 separators :: Parser ()
 separators = void $ many separator

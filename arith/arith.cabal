@@ -12,6 +12,6 @@ executable arith
   main-is:         Main.hs
   build-depends:   base >= 4
                  , bytestring >= 0.9
-                 , parsec
+                 , parsec >= 3.1
   ghc-options:     -Wall
 
